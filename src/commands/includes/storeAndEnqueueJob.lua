@@ -31,6 +31,10 @@ local function storeAndEnqueueJob(eventsKey, jobIdKey, jobId, name, data, opts,
           priorityCounterKey, isPausedOrMaxed)
     else
       local pushCmd = opts['lifo'] and 'RPUSH' or 'LPUSH'
+      local insertOp = opts['insertOp']
+      if insertOp and insertOp ~= '' then
+        pushCmd = string.upper(insertOp)
+      end
       addJobInTargetList(waitKey, markerKey, pushCmd, isPausedOrMaxed, jobId)
     end
 

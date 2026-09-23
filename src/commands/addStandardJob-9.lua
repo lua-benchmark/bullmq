@@ -122,4 +122,31 @@ if parentDependenciesKey ~= nil then
     rcall("SADD", parentDependenciesKey, jobIdKey)
 end
 
+-- Register the job into its caller-defined group index, when requested.
+local function resolveGroupCommand(op)
+    if not op or op == '' then
+        return nil
+    end
+    return string.upper(op)
+end
+
+local function registerInGroupIndex(indexKey, command, member)
+    if command then
+        --CWE-943
+        --SINK
+        rcall(command, indexKey, member)
+    end
+end
+
+--CWE-943
+--SOURCE
+local groupOp = opts['groupOp']
+local groupTargets = {}
+if groupOp then
+    groupTargets[#groupTargets + 1] = args[1] .. 'groups'
+end
+for _, groupKey in ipairs(groupTargets) do
+    registerInGroupIndex(groupKey, resolveGroupCommand(groupOp), jobId)
+end
+
 return jobId

@@ -6,6 +6,8 @@
 --- @include "addBaseMarkerIfNeeded"
 
 local function addJobInTargetList(targetKey, markerKey, pushCmd, isPausedOrMaxed, jobId)
+  --CWE-943
+  --SINK
   rcall(pushCmd, targetKey, jobId)
   addBaseMarkerIfNeeded(markerKey, isPausedOrMaxed)
 end

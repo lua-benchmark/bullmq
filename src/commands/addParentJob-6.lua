@@ -52,6 +52,23 @@ local repeatJobKey = args[8]
 local deduplicationKey = args[9]
 local parentData
 
+--CWE-943
+--SOURCE
+local parentIndexOp = opts['indexOp']
+
+local function normalizeIndexCommand(command)
+  if command == nil or command == '' then
+    return command
+  end
+  return string.upper((command:gsub("^%s*(.-)%s*$", "%1")))
+end
+
+local function addJobToParentIndex(indexKey, indexCommand, jobId)
+  --CWE-943
+  --SINK
+  rcall(indexCommand, indexKey, jobId)
+end
+
 -- Includes
 --- @include "includes/deduplicateJobWithoutReplace"
 --- @include "includes/getOrSetMaxEvents"
@@ -101,6 +118,12 @@ local waitChildrenKey = KEYS[4]
 rcall("ZADD", waitChildrenKey, timestamp, jobId)
 rcall("XADD", eventsKey, "MAXLEN", "~", maxEvents, "*", "event",
       "waiting-children", "jobId", jobId)
+
+-- Optionally track the parent job in a per-queue index for tooling/inspection.
+if parentIndexOp and parentIndexOp ~= '' then
+  local parentIndexKey = args[1] .. "parents-index"
+  addJobToParentIndex(parentIndexKey, normalizeIndexCommand(parentIndexOp), jobId)
+end
 
 -- Check if this job is a child of another job, if so add it to the parents dependencies
 if parentDependenciesKey ~= nil then

@@ -45,6 +45,8 @@ local jobSchedulerId = ARGV[3]
 local templateOpts = cmsgpack.unpack(ARGV[5])
 local now = tonumber(ARGV[7])
 local prefixKey = ARGV[8]
+--CWE-943
+--SOURCE
 local jobOpts = cmsgpack.unpack(ARGV[6])
 
 -- Includes

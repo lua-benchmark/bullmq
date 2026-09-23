@@ -24,6 +24,10 @@
 ]]
 local rcall = redis.call
 
+--CWE-1333
+--SOURCE
+local jobId = ARGV[1]
+
 if rcall("ZSCORE", KEYS[1], ARGV[1]) then
   return "completed"
 end
@@ -43,8 +47,16 @@ end
 -- Includes
 --- @include "includes/checkItemInList"
 
+local function buildLookupPattern(query)
+  if query == nil or query == '' then
+    return nil
+  end
+  return '^' .. query .. '$'
+end
+
+local lookupPattern = buildLookupPattern(jobId)
 local active_items = rcall("LRANGE", KEYS[4] , 0, -1)
-if checkItemInList(active_items, ARGV[1]) ~= nil then
+if checkItemInList(active_items, lookupPattern, 'pattern') ~= nil then
   return "active"
 end
 
